@@ -21,6 +21,8 @@
 \newtheorem{lemma}{Lemma}
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
 
 %--------------------------------------- Document
 \begin{document}
@@ -285,6 +287,9 @@ Rubinfeld and Sudan:
 \section{Linearity testing of Boolean functions}
 \label{sec:line-test-bool}
 
+\subsection{Testability of linearity}
+\label{sec:test-line}
+
 We will prove the (local) testability of linearity in three steps: 
 \begin{enumerate}
 \item Express the ``acceptance probability'' of the \textsf{BLR}-test
@@ -347,7 +352,7 @@ functions we will now switch to the multiplicative notation.
 \end{proof}
 
 
-\begin{theorem}[Local testability of linearity]
+\begin{theorem}[Local testability of linearity] \label{thm:1}
   The property of being linear is locally testable. 
 \end{theorem}
 
@@ -378,13 +383,103 @@ functions we will now switch to the multiplicative notation.
   linear. 
 \end{proof}
 
-\begin{theorem}[Testability of linearity]
+\begin{theorem}[Testability of linearity] \label{thm:2}
   The property of being linear is testable with
   \(\mathcal{O}\left(\frac{1}{\eps}\right)\) queries. 
 \end{theorem}
 
-\emph{Here the proof is still missing!}
+\begin{proof}
+  We define the randomized query algorithm taking
+  \(\mathcal{T}(f,\eps)\) taking \(f\) and \(\eps\) as arguments as
+  follows: 
+  \begin{itemize}
+  \item Run \(\textsf{BLR}(f)\) \(\frac{2}{\eps}\) times,
+    independently.
+  \item Accept iff every \(\textsf{BLR}(f)\) accepts. 
+  \end{itemize}
+  Note that if \(f\) is linear then \(\mathcal{T}(f)\) accepts with
+  probability one, since \(\textsf{BLR}(f)\) accepts.\\
+  Assume now that \(f\) is \(\eps\)-far from being linear. Since the
+  \textsf{BLR} queries are independent from each other, we get from
+  Theorem \ref{thm:1}
+  \begin{align}
+    \prob\left[\mathcal{T}(f) \text{ accepts}\right] 
+    &< \left(1-\eps\right)^{\frac{2}{\eps}} \\
+    &= \left(1-\frac{1}{(1/\eps)^{\frac{1}{\eps}}}\right)^2.
+  \end{align}
+  Since the last term converges for \(\eps \rightarrow 0\) to
+  \(e^{-2}\) for \(\eps\) small enough (e.g. \(\eps \leq
+  \frac{1}{2}\)) one gets
+  \[\prob\left[\mathcal{T}(f) \text{ accepts}\right] < \frac{1}{3}.\]
+\end{proof}
 
+
+\subsection{Local decodability of linearity}
+\label{sec:local-decod-line}
+
+Theorem \ref{thm:2} gives us a recipe to test if a given Boolean
+function is \(\eps\)-close to a parity function. But how can we guess
+the right parity function using a minimum number of queries? The
+following result tells us that there is an algorithm making only two
+queries and predicts with high probability the right parity function. 
+
+\begin{theorem}[Local docadiblity of linearity] \label{thm:3}
+  The property \(\mathcal{P}_{lin}\) of being a parity function is
+  \emph{locally docodable} with 2 queries, i.e. there exists a
+  randomized 2-query algorithm \(\mathcal{T}\) which has access to a
+  function \(f:\{-1,1\}^n \rightarrow \{-1,1\}\) and takes strings \(x \in
+  \{-1,1\}^n\) as arguments such that if \(f\) is \(\eps\)-close to a
+  parity function \(\chi_S\), then for every (!) \(x \in \{-1,1\}^n\)
+  one has 
+  \begin{equation}
+    \label{eq:5}
+    \prob\left[\mathcal{T}(x) = x_S\right] \geq 1 - 2\eps. 
+  \end{equation}
+\end{theorem}
+
+\begin{remark}
+Note that the Theorem \ref{thm:3} does not say for \emph{almost every}
+\(x\in \{-1,1\}^n\) \(\mathcal{T}(x)\) computes the right value (this
+would be \(\prob_{x \in \{-1,1\}^n}[\mathcal{T} = \chi_S] \geq 1 -
+2\eps \)). \\
+Instead, the theorem states that for \emph{every (fixed)} \(x\in
+\{-1,1\}^n\) \(\mathcal{T}(x)\) computes the right value with high
+probability (the probability comes from the internal randomization of
+the algorithm \(\mathcal{T}\)). 
+\end{remark}
+
+\begin{proof}
+  Let \(x\in \{-1,1\}^n\) be fixed. We define \(\mathcal{T}\) as
+  follows: 
+  \begin{itemize}
+  \item Pick \(y\in\{-1,1\}^n\) uniformly at random.
+  \item Return \(f(y)f(x\circ y)\). 
+  \end{itemize}
+  We make the following observation: First, since \(y\) is uniformly
+  distributed and \(f\) is \(\eps\)-close to \(\chi_S\) one has
+  \begin{equation}
+    \label{eq:6}
+    \prob_{y\in\{-1,1\}^n}[f(y) = \chi_S(y)] \geq 1 - \eps. 
+  \end{equation}
+  Similary \(x\circ y\) is again uniformly distributed (but not
+  independent of \(y\)) and 
+  \begin{equation}
+    \label{eq:7}
+    \prob_{y\in\{-1,1\}^n}[f(x\circ y) = \chi_S(x\circ y)] \geq 1 - \eps. 
+  \end{equation}
+  Using the union bound and (\ref{eq:6}) and (\ref{eq:7}) we find 
+  \begin{align}
+    \label{eq:8}
+    \prob_{y}[f(x\circ y) &= \chi_S(x\circ y), f(y) = \chi_S(y)] \\
+    &= \prob_{y}[f(x\circ y) = \chi_S(x\circ y)] + \prob_{y}[f(y) = \chi_S(y)] \\ 
+    &- \prob_{y}[\{f(x\circ y) = \chi_S(x\circ y)\} \cup \{f(y) = \chi_S(y)\}] \\
+    &\geq (1-\eps) + (1-\eps) - 1 \\
+    &= 1-2\eps. 
+  \end{align}
+  But in this case that booth equalities hold we have 
+  \[f(y)f(x\circ y) = y_Sx_Sy_S = x_S,\] 
+  which finishes the proof. 
+\end{proof}
 \section{Dictator testing of Boolean functions}
 \label{sec:dict-test-bool}
 
