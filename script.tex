@@ -1,0 +1,392 @@
+\documentclass[a4paper]{article}
+
+%--------------------------------------- Packages
+\usepackage{mathtools}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{enumitem}
+\usepackage{bbold}
+
+%--------------------------------------- Definitions
+\newcommand{\prob}{\mathbf{P}}
+\newcommand{\expe}{\mathbf{E}}
+\newcommand{\real}{\mathbb{R}}
+\newcommand{\prty}{\mathcal{P}}
+\newcommand{\nset}{[n]}
+\newcommand{\eps}{\varepsilon}
+
+%--------------------------------------- Environments
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+
+%--------------------------------------- Document
+\begin{document}
+\title{Testing of Boolean functions}
+\author{Pascal Huber}
+\date{\today}
+\maketitle
+
+\section{Motivation}
+\label{sec:motivation}
+
+\section{Reminder}
+\label{sec:reminder}
+
+\paragraph{Boolean functions}
+\label{sec:boolean-functions}
+
+We consider functions from the hypercube \(\Omega_n \coloneqq
+\{-1,1\}^n\) into the real numbers. A function \(f: \Omega_n
+\rightarrow \real\) is called \emph{Boolean function} if it takes values only in
+\(\{-1,1\}\). \\\\
+We recall two important types of Boolean functions:\\
+\begin{enumerate}
+\item Let \(\nset \coloneqq \left\{1,2, \dots, n\right\}\) and let
+  \(S\subseteq \nset\). Then the \emph{parity function over S} is
+  defined by 
+  \[ \chi_S(x) \coloneqq x_S \coloneqq \prod_{i \in S} x_i. \]
+  Note that the product over the empty set is equal to one: \(\prod_{i
+    \in \emptyset} x_i = 1\). 
+
+\item The parity functions over the sets \(S = \{i\}\) are called
+  \emph{dictator functions}. They depend solely on the \(i\)-th bit,
+  i.e. 
+  \[\chi_i \coloneqq \chi_{\{i\}} = x_i.\] 
+\end{enumerate}
+
+\noindent\emph{(Note over the Great notational switch)?}
+\\
+
+\paragraph{Correlation of Boolean functions}
+\label{sec:corr-bool-funct}
+
+\noindent The measurable space \(\left(\Omega_n, \mathcal{P}(\Omega_n)\right)\)
+is equipped with the uniform probability measure \[\prob_{x \in
+  \{-1,1\}^n} = \left(\frac{1}{2} \delta_{-1} +
+  \frac{1}{2}\delta_1\right)^{\otimes n}.\]
+Furthermore we define the corresponding \(L^2\)-inner product (called \emph{correlation}) for two
+functions \(f,g: \Omega_n \rightarrow \real\) on this space by 
+\[\langle f,g\rangle \coloneqq \expe_{x \in
+  \{-1,1\}^n}\left[f(x)g(x)\right].\]
+Note that if \(f\) and \(g\) are Boolean functions then one always
+gets \(\langle f, g\rangle \in [-1,1]\) and \(\|f\| \coloneqq
+\sqrt{\langle f, f\rangle } = 1\).  
+
+\paragraph{Results from Fourier analysis of Boolean functions}
+\label{sec:results-from-fourier}
+
+Before introducing the notions of testability of Boolean functions we
+recall the most important results of the Fourier analysis of Boolean
+functions. 
+\begin{itemize}
+\item The parity functions \(\left(\chi_S\right)_{S \subseteq \nset}\)
+  form an orthonormal basis on the space of all functions from
+  \(\Omega_n\) to the real numbers, i.e. 
+  \[\langle \chi_S, \chi_T\rangle =  \begin{cases}
+    1 & S=T \\
+    0 & \text{else}
+  \end{cases}\]
+\item Consequently every Boolean function \(f\) has a unique
+  representation of the form 
+  \begin{equation}
+    \label{eq:1}
+    f = \sum_{S\subseteq \nset} \hat{f}(S) \chi_S.
+  \end{equation}
+  The coefficients \(\hat{f}(S)\) are called \emph{Fourier
+    coefficients} and (\ref{eq:1}) is called the \emph{Fourier
+    expansion} of \(f\).
+\item \emph{Plancharel's theorem:} Let \(f,g: \Omega_n \rightarrow
+  \real\). Then \(\langle f, g\rangle = \sum_{S\subseteq \nset}
+  \hat{f}(S)\hat{g}(S)\).
+\item \emph{Parseval's theorem:} Let \(f: \Omega_n \rightarrow
+  \real\). Then \(\langle f, f\rangle = \sum_{S\subseteq \nset}
+  \hat{f}(S)^2\). Especially, if \(f\) is Boolean one has the identity \(\sum_{S\subseteq \nset}
+  \hat{f}(S)^2 = 1\). 
+\end{itemize}
+
+
+\section{Linearity of Boolean functions and basics of property testing}
+\label{sec:line-bool-funct}
+
+\subsection{Linearity of Boolean functions}
+\label{sec:line-bool-funct-1}
+
+As a motivation we will first define what it means for a Boolean
+function to be linear. We introduce two possible definitions: 
+
+\begin{definition}[Linearity of Boolean functions] \label{def:1}
+  A Boolean function \(f: \{0,1\}^n \rightarrow \{0,1\}\) is called \emph{linear}
+  iff one of the following statements hold: 
+  \begin{enumerate}[label= (\roman*)]
+  \item For all \(x,y \in \{0,1\}^n\) one has \(f(x+y) = f(x) + f(y)\).
+  \item \(f\) is a parity function, i.e. there exists \(S \subseteq
+    \nset\) such that for all \(x \in \{0,1\}^n\) one has \(f(x) =
+    \chi_S(x)\). 
+  \end{enumerate}
+\end{definition}
+
+\noindent In multiplicative notation the definition reads as follows: 
+\begin{enumerate}[label= (\roman*)]
+\item For all \(x,y \in \{-1,1\}^n\) one has \(f(x\circ y) = f(x)\cdot
+  f(y)\), where \(x\circ y \coloneqq (x_1y_1, \dots, x_ny_n)\).
+\item There exists \(S \subseteq \nset\) such that for all \(x\in
+  \{-1,1\}^n\) one has \(f(x) = \prod_{i\in S} x_i\). 
+\end{enumerate}
+
+\noindent In order to make sure that Definition
+\ref{def:line-bool-funct} is well defined we have to show that (i) and
+(ii) are equivalent: \\
+\underline{(ii) \(\Rightarrow\) (i):} is straightforward since 
+\[\chi_S(x+y) = \sum_{i\in S} (x_i + y_i) = \sum_{i\in S} x_i +
+\sum_{i\in S} y_i = \chi_S(x) + \chi_S(y).\]
+\underline{(i) \(\Rightarrow\) (ii):} uses the representation \(x =
+x_1 e_1 + \dots + x_n e_n\) where \(e_i = (0,\dots,0,1,0,\dots,0)\)
+with the \(1\) at the \(i\)-th bit. Then by iterating (i) one gets
+\[f(x) = f\left(\sum_{i=1}^{n} x_i e_i\right) = \sum_{i=1}^{n} x_i f(e_i) =
+\sum_{i\in S} x_i, \]
+where \(S \coloneqq \left\{i\in \nset : f(e_i) = 1 \right\}\). \\
+
+\noindent Thus we see that the linear Boolean functions are exactly
+the parity functions. (Note that we showed this using the additive
+notation, but this is of course also true when we use the
+multiplicative representation.) 
+
+\subsection{Approximate linearity and basic notions of property testing}
+\label{sec:appr-line-basic}
+
+In the following we illustrate the basic notions of property testing
+using the example of linearity testing. 
+
+\paragraph{Approximate linearity}
+\label{sec:appr-line}
+
+The requirement to be linear on \(\{0,1\}^n\) is rather expensive to
+check (one has to do all \(2^n\) queries) and hence often too
+restrictive. That's why one considers a more relaxed concept of
+linearity: \\
+
+\noindent A Boolean function \(f:\{0,1\}^n \rightarrow \{0,1\}\) is called
+\emph{approximate linear} iff
+\begin{enumerate}[label= (\roman*')]
+\item for ``most'' pairs \(x,y \in \{0,1\}^n\) one has \(f(x+y) = f(x)
+  + f(y)\).
+\item there exist \(S \subseteq \nset\) s.t. for ``most'' \(x\in
+  \{0,1\}^n\) one has \(f(x) = \chi_S(x)\). 
+\end{enumerate}
+(We will define more precisely what is meant by ``most'' in a
+second.)\\
+
+\noindent As before we would like both definitions to be equivalent
+and one easily sees by copying the above argument that (ii') indeed
+implies (i'). The other implication on the other hand is much less
+obvious. \\
+A main result of this course will be that in fact (i') implies
+(ii'). In order to show this we will use the results of the Fourier
+analysis extensively. But before dwelling on the proof we want to put
+the problem in the more general context of property testing. Therefore
+we will need some definitions. 
+
+\begin{definition}[Property of Boolean functions]
+  A \emph{property of Boolean functions} is a subset \(\prty\) of the
+  set of all Boolean functions. We say that a Boolean function \(f\) \emph{has property \(\prty\)} if \(f
+  \in \prty\). 
+\end{definition}
+
+\begin{definition}[\(\eps\)-far and \(\eps\)-close]
+  \begin{enumerate}[label=(\roman*)]
+  \item Two Boolean functions \(f,g\) are \(\eps\)-close if they agree
+    on a \((1-\eps)\)-fraction of \(\{0,1\}^n\), i.e. 
+    \[\prob_{x\in\{0,1\}^n}\left[f(x) = g(x)\right] \geq (1-\eps).\]
+    Otherwise they are \(\eps\)-far. 
+  \item A Boolean function \(f\) is \(\eps\)-close to having property
+    \(\prty\) if there exists some function \(g\in \prty\) such that
+    \(f\) and \(g\) are \(\eps\)-close. 
+  \end{enumerate}
+\end{definition}
+
+\noindent In our case the property we are interested in is to being
+linear, i.e. \(\prty_{lin} \coloneqq \{\chi_S: S \subseteq
+\nset\}\). \\ 
+Thus (ii') can be reformulated as being \(\eps\)-close to being
+linear. \\
+
+How can (i') be understood in this context? It is favorable to
+interpret it as a property test: 
+
+\emph{Multiplicative notation of BLR test !!}
+
+\begin{definition}[\textsf{BLR} linearity test (Blum, Luby, Rubinfeld)]
+  Given blackbox access to a Boolean function \(f\) do the following
+  steps: 
+  \begin{enumerate}
+  \item Pick \(x\) and \(y\) independently and uniformly at random
+    from \(\{0,1\}^n\).
+  \item Query \(f\) on \(x\), \(y\) and \(x+y\).
+  \item ``Accept'' iff \(f(x) + f(y) = f(x+y)\). 
+  \end{enumerate}
+\end{definition}
+
+\noindent Using this definition (i') says that the probability of
+\textsf{BLR} accepting the function \(f\) is large, more precisely we
+want to have \[\prob_{x,y \in \{0,1\}^n}\left[\textsf{BLR}(f) \text{
+    accepts }\right] \leq (1-\eps).\]
+
+\noindent Hence if we can prove that (i') implies (ii') then we have
+shown that for the linearity property there exists a querying
+algorithm making only \(3\) queries such that whenever \(f\) is
+\(\eps\)-far from being linear then the algorithm accepts \(f\) with
+probability of at most \(1-\eps\). \\
+The existence of such a querying algorithm can also be shown for other
+properties and motivates the following definition: 
+
+\begin{definition}[Locally testable property]
+  A property \(\prty\) of Boolean functions is called \emph{locally
+    testable} if there exists a randomized querying algorithm
+  \(\mathcal{T}\) making at most \(\mathcal{O}(1)\) queries such that: 
+  \begin{enumerate}[label=(\roman*)]
+  \item If \(f \in \prty\) then \(\prob[\mathcal{T}(f) \text{ accepts}] = 1\).
+  \item If \(f\) is \(\eps\)-far from having property \(\prty\) then
+    \(\prob[\mathcal{T}(f) \text{ accepts}] \leq 1 - \Omega(\eps)\).
+  \end{enumerate}
+\end{definition}
+
+\noindent A more general definition of testability which relates the
+closeness to the property with the number of queries is due to
+Rubinfeld and Sudan: 
+
+\begin{definition}[Testable property]
+  A property \(\prty\) of Boolean functions is \emph{testable with
+    \(q(\eps)\) queries} if there exists a randomized algorithm
+  \(\mathcal{T}\) (which gets \(\eps\) as input) such that for all
+  \(\eps > 0\) it makes \(q(\eps)\) queries and satisfies:
+  \begin{enumerate}[label=(\roman*)]
+  \item If \(f \in \prty\) then \(\prob[\mathcal{T}(f) \text{
+      accepts}] \geq \frac{2}{3}\).
+  \item If \(f\) is \(\eps\)-far from \(\prty\) then \(\prob[\mathcal{T}(f) \text{
+      accepts}] \leq \frac{1}{3}\).
+  \end{enumerate}
+\end{definition}
+
+\emph{Note about the 1/3 thing...}\\
+
+\noindent The aim of today's course will be to show that the property
+\(\prty_{lin}\) of being linear is 
+\begin{itemize}
+\item is locally testable (this is the implication (i') \(\Rightarrow\)
+  (ii'))
+\item is testable with \(\mathcal{O}\left(\frac{1}{\eps}\right)\)
+  queries. 
+\end{itemize}
+
+
+\section{Linearity testing of Boolean functions}
+\label{sec:line-test-bool}
+
+We will prove the (local) testability of linearity in three steps: 
+\begin{enumerate}
+\item Express the ``acceptance probability'' of the \textsf{BLR}-test
+  for an arbitrary Boolean function \(f\) in terms of its Fourier
+  coefficients.
+\item Prove local testability of linearity using this representation.
+\item Prove testability by executing the \textsf{BLR}-test multiple
+  times. 
+\end{enumerate}
+
+\noindent Since we want to use the Fourier expansion of Boolean
+functions we will now switch to the multiplicative notation. 
+
+\begin{lemma}[Acceptance probability of the \textsf{BLR}-test] \label{lem:1}
+  Let \(f: \{-1,1\}^n \rightarrow \{-1,1\}\) be a Boolean function. Then
+  the following holds: 
+  \begin{equation}
+    \label{eq:2}
+    \prob_{x,y \in \{-1,1\}^n}[\textsf{BLR}(f) \text{ accepts}] = \frac{1}{2} + \frac{1}{2}\sum_{S\subseteq \nset}\hat{f}(S)^3.
+  \end{equation}
+\end{lemma}
+
+\begin{proof}
+  The proof consists primarly in writing the probability term in a
+  suitable way and using the Fourier expansion of \(f\). \\
+  We write the indicator function \(\mathbb{1}_{\{\textsf{BLR}(f) \text{ accepts}\}}\) in the
+  following way for \(x,y \in \{-1,1\}^n\)
+  \[\mathbb{1}_{\{\textsf{BLR}(f) \text{ accepts}\}}(x,y) =
+  \frac{1}{2} + \frac{1}{2}f(x)f(y)f(x\circ y).\]
+  Hence we can express the right-hand side of (\ref{eq:2}) by
+  \[\prob_{x,y \in \{-1,1\}^n}[\textsf{BLR}(f) \text{ accepts}] =
+  \frac{1}{2} + \frac{1}{2}\expe_{x,y}[f(x)f(y)f(x\circ y)].\]
+  Using the Fourier expansion of \(f\) we find by linearity: 
+  \begin{align}
+    \label{eq:3}
+    \prob&_{x,y \in \{-1,1\}^n}[\textsf{BLR}(f) \text{ accepts}] \notag \\ 
+    &=  \frac{1}{2} + \frac{1}{2} \sum_{S,T,U \subseteq \nset}\left(\hat{f}(S) \hat{f}(T) \hat{f}(U) \expe_{x,y}[\chi_S(x)\chi_T(y)\chi_U(x\circ y)]\right) \\
+    &= \frac{1}{2} + \frac{1}{2} \sum_{S,T,U \subseteq \nset}\left(\hat{f}(S) \hat{f}(T) \hat{f}(U) \expe_{x,y}[\chi_S(x) \chi_T(y) \chi_U(x) \chi_U(y)]\right) \\
+    &= \frac{1}{2} + \frac{1}{2} \sum_{S,T,U \subseteq \nset}\left(\hat{f}(S) \hat{f}(T) \hat{f}(U) \expe_{x,y}[\chi_{S\triangle U}(x) \cdot \chi_{T \triangle U}(y)]\right),
+  \end{align}
+  where we used the linearity of parity functions and the relation
+  \(\chi_S(x) \cdot \chi_T(x) = \chi_{S\triangle T}(x)\).\\
+  Since in the product measure \(\prob_{x,y}\) functions of \(x,y\)
+  are independent we finally get 
+  \begin{align}
+    \label{eq:4}
+    \prob&_{x,y \in \{-1,1\}^n}[\textsf{BLR}(f) \text{ accepts}] \notag \\ 
+    &= \frac{1}{2} + \frac{1}{2} \sum_{S,T,U \subseteq \nset}\left(\hat{f}(S) \hat{f}(T) \hat{f}(U) \cdot \expe_x[\chi_{S\triangle U}(x)] \expe_y[\chi_{T \triangle U}(y)]\right) \\
+    &= \frac{1}{2} + \frac{1}{2} \sum_{S,T,U \subseteq \nset}\left(\hat{f}(S) \hat{f}(T) \hat{f}(U) \cdot \langle \chi_S, \chi_U \rangle \cdot \langle \chi_T, \chi_U \rangle \right) \\
+    &= \frac{1}{2} + \frac{1}{2} \sum_{S \subseteq \nset} \hat{f}(S)^3, 
+  \end{align}
+  since the parity functions are a orthonormal basis of all Boolean
+  functions which means in particular
+  \[\langle \chi_S, \chi_U \rangle \cdot \langle \chi_T, \chi_U \rangle = 
+  \begin{cases}
+    1 & \text{if } S = U = T, \\
+    0 & \text{else}.
+  \end{cases}
+\]
+\end{proof}
+
+
+\begin{theorem}[Local testability of linearity]
+  The property of being linear is locally testable. 
+\end{theorem}
+
+\emph{Here the proof is still missing! State that
+  \(\prob[\textsf{BLR}(f) \text{ accepts}] < 1 - \eps\)}
+
+\begin{proof}
+  If \(f = \chi_S\) for some \(S\subseteq \nset\) then by Definition
+  \ref{def:1} and the subsequent discussion \(f(x\circ y) = f(x) \cdot
+  f(y)\) for all \(x,y \in \{-1,1\}^n\). \\
+  Let now \(f\) be \(\eps\)-far from being linear and assume for the
+  sake of contradiction 
+  \[\prob_{x,y}\left[\textsf{BLR}(f) \text{ accepts}\right] \geq
+  (1-\eps). \]
+  Then using Lemma \ref{lem:1} we have \(1-\eps \leq \frac{1}{2} +
+  \frac{1}{2} \sum_{S\subseteq \nset}\hat{f}(S)^3\) and consequently
+  \begin{align}
+    1 - 2\eps &\leq \sum_{S\subseteq \nset}\hat{f}(S)^3 \\
+    &\leq \left(\max_{S\subseteq \nset} \hat{f}(S)\right)\cdot \sum_{S\subseteq \nset}\hat{f}(S)^2 \\
+    &= \left(\max_{S\subseteq \nset} \hat{f}(S)\right) \cdot 1,  \label{al:1}
+  \end{align}
+  where we used Parseval's theorem in (\ref{al:1}). \\
+  Hence there exists a subset \(T \subseteq \nset\) such that 
+  \[1 - 2\eps \leq \expe_{x\in\{_1,1\}^n}\left[f(x)\chi_T(x)\right].\]
+  But this implies 
+  \[1 - \eps \leq \prob_{x\in\{_1,1\}^n}[f(x) = \chi_T(x)], \]
+  which is a contradiction of \(f\) being \(\eps\)-far from being
+  linear. 
+\end{proof}
+
+\begin{theorem}[Testability of linearity]
+  The property of being linear is testable with
+  \(\mathcal{O}\left(\frac{1}{\eps}\right)\) queries. 
+\end{theorem}
+
+\emph{Here the proof is still missing!}
+
+\section{Dictator testing of Boolean functions}
+\label{sec:dict-test-bool}
+
+
+\end{document}
