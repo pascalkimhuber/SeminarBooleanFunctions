@@ -281,7 +281,7 @@ interpret it as a \emph{property test}:
   \begin{enumerate}
   \item Pick \(\boldx\) and \(\boldy\) independently and uniformly at random
     from \(\{-1,1\}^n\).
-  \item Query \(f\) on \(\boldx\), \(\boldy\) and \(\boldx+\boldy\).
+  \item Query \(f\) on \(\boldx\), \(\boldy\) and \(\boldx \circ \boldy\).
   \item ``Accept'' iff \(f(\boldx)f(\boldy)f(\boldx \circ \boldy) = 1\). 
   \end{enumerate}
 \end{definition}
