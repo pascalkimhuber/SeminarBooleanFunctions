@@ -6,7 +6,7 @@
 \usepackage{amsthm}
 \usepackage{enumitem}
 \usepackage{bbold}
-\usepackage{draftwatermark}
+%\usepackage{draftwatermark}
 
 %--------------------------------------- Definitions
 \newcommand{\prob}{\mathbf{P}}
@@ -29,17 +29,91 @@
 \newtheorem*{remark*}{Remark}
 
 %--------------------------------------- Some settings
-\SetWatermarkScale{4}
+%\SetWatermarkScale{4}
 
 %--------------------------------------- Document
 \begin{document}
-\title{Testing of Boolean functions}
+\title{\textsc{Introduction to property testing of Boolean functions}}
 \author{Pascal Huber}
-\date{\today}
+\date{May, 19, 2014}
 \maketitle
 
 \section{Motivation}
 \label{sec:motivation}
+
+In this motivation we will briefly introduce the general concept of
+\emph{property testing} and give some possible applications. \\
+
+\noindent In computer science, property testing refers to the following
+task: given the ability to perform queries (``blackbox-access'') on
+some (unknown) mathematical ``object'' (e.g. a function or a graph)
+determine if the object has predetermined ``property''
+(e.g. linearity), or is ``far'' from having this property. In addition
+the decision should be performed by using only a small number of
+queries. \\ 
+
+\noindent Note that this description of property testing is very
+general and leaves a lot of freedom in how to define a property
+testing problem. In particular the notions of ``property'' and ``far
+from having a property'' must be defined. \\ 
+The following example illustrates the concept of property testing in
+the setting of Boolean functions (the precise definitions of all
+notions will be treated later): 
+
+\paragraph{A small example:}
+ Assume we are given some unknown Boolean
+function \(f: \{0,1\}^n \rightarrow \{0,1\}\) to which we have
+blackbox-access, meaning we have the possibility to make arbitrary
+queries \(f(x)\) (dt. Abfragen). \\
+For some reason we would like to know if \(f\) has some property, say
+we want to know if \(f\) is a dictator function.
+
+\begin{itemize}
+\item The only possibility to show \emph{exactly} that \(f\) is indeed a
+  dictator, would be to query \(f\) on all \(2^n\) possible input
+  values \(x\in \{0,1\}^n\) which is quiet expensive for large
+  \(n\).
+\item Hence, instead of querying \(f\) on all possible input values, it is
+  maybe a good idea to test if \(f\) is only ``approximately'' a
+  dictator function, meaning that there exists a dictator function \(g\)
+  such that \(f\) and \(g\) differ only on a small fraction of input
+  values. It turns out that this type of testing algorithm needs
+  considerably less queries whereas we loose some accuracy in the
+  result. 
+\end{itemize}
+
+\noindent The example suggests that a good way to look at the concept
+of property testing, is to understand it as a relaxation of the exact
+decision problem, which in the context above consists of determining
+exactly if the function \(f\) has the property in question or not. 
+
+\paragraph{Some applications of property testing}
+\begin{description}
+\item[Program checking] Property testing emerges quite naturally in
+  the context of program checking. The aim in program checking is to
+  test if a given program computes the specified function. \\
+  Before testing this, programmers may first check their programs by
+  testing properties that are known to be satisfied by the specified
+  function.
+\item[Learning theory] The framework in learning theory is quite
+  similar to the one of property testing: Given a sample of
+  input-output pairs \(x,f(x)\) for an unknown function \(f\), the task
+  is to ``learn'' \(f\), i.e. find a function \(h\) (\emph{hypothesis
+    function}) that estimates \(f\) well. \\
+  In addition one often assumes that \(f\) is in a certain
+  ``hypothesis class'' (which can be viewed as a property) and asks
+  \(h\) to be in the same class. In this context, property testing can
+  be seen as a relaxation of machine learning and can be used to
+  choose good hypothesis classes.
+\item[Probabilistically checkable proof (PCP)] In PCP the property
+  being tested is whether the function in question is a codeword of a
+  specific code (see next course session). 
+\end{description}
+
+\noindent In the following we will introduce the basic notions of property
+testing of Boolean functions and prove some results in linearity
+testing. 
+
 
 \section{Reminder}
 \label{sec:reminder}
@@ -74,7 +148,7 @@ where we use the convention: \(\chi_\emptyset(\boldx) = \prod_{i  \in
 \paragraph{Great notational switch}
 \label{sec:great-notat-switch}
 
-Since we will treat linearity testing of Boolean functions it is in
+Since we will treat linearity testing of Boolean functions, it is in
 some cases more suitable to replace the setting above by an
 additive version (this is sometimes called the \emph{``great
   notational switch''}).\\
@@ -82,7 +156,7 @@ For this we replace the bit-set \(\{-1,1\}\) by \(\{0,1\}\)
 (substituting \(1 \leadsto 0 \) and \(-1 \leadsto 1\)).  
 Moreover the multiplication in \(\{-1,1\}\) is replaced by the
 addition in \(\mathbb{F}_2\). 
-In this setting a Boolean function has the form 
+In this setting, a Boolean function has the form 
 \[f: \{0,1\}^n \rightarrow \{0,1\}.\]
 Note that the parity functions are in this setting just the functions of
 the form \(\chi_S(\boldx) = \sum_{i\in S} x_i\) for some \(S\subseteq
@@ -95,7 +169,7 @@ the form \(\chi_S(\boldx) = \sum_{i\in S} x_i\) for some \(S\subseteq
 \paragraph{Correlation of Boolean functions}
 \label{sec:corr-bool-funct}
 
-\noindent The measurable space \(\left(\Omega_n, \mathcal{P}(\Omega_n)\right)\)
+\noindent The measurable space \(\left(\{-1,1\}^n, \mathcal{P}(\{-1,1\}^n)\right)\)
 is equipped with the uniform probability measure \[\prob_{x \in
   \{-1,1\}^n} \coloneqq \left(\frac{1}{2} \delta_{-1} +
   \frac{1}{2}\delta_1\right)^{\otimes n}.\]
@@ -110,9 +184,6 @@ gets \(\langle f, g\rangle \in [-1,1]\) and \(\|f\| \coloneqq
 \paragraph{Results from Fourier analysis of Boolean functions}
 \label{sec:results-from-fourier}
 
-Before introducing the notions of testability of Boolean functions we
-recall the most important results from Fourier analysis of Boolean
-functions. 
 \begin{itemize}
 \item The parity functions \(\left(\chi_S\right)_{S \subseteq \nset}\)
   form an orthonormal basis (w.r.t. the correlation) on the space of all functions from  \(\Omega_n\) to the real numbers, in particular 
@@ -146,7 +217,7 @@ functions.
 \label{sec:line-bool-funct-1}
 
 In order to analyse linearity testing of Boolean functions (see
-section \ref{sec:line-test-bool}) it is a
+section \ref{sec:line-test-bool}), it is a
 good start to define what it means for a Boolean
 function to be linear. \\ 
 
@@ -159,7 +230,7 @@ analogous results hold also for the multiplicative setting.
 
 \begin{definition}[Linearity of Boolean functions] \label{def:1}
   A Boolean function \(f: \{0,1\}^n \rightarrow \{0,1\}\) is called \emph{linear}
-  iff one of the following statements hold: 
+  iff one of the following equivalent statements hold: 
   \begin{enumerate}[label= (\roman*)]
   \item For all \(\boldx,\boldy \in \{0,1\}^n\) one has
     \(f(\boldx+\boldy) = f(\boldx) + f(\boldy)\). 
@@ -183,7 +254,7 @@ analogous results hold also for the multiplicative setting.
 \end{remark*}
 
 \noindent In order to make sure that Definition
-\ref{def:1} is well defined we have to show that both statements of
+\ref{def:1} is well-defined, we have to show that both statements of
 the definition are equivalent: \\
 \underline{(ii) \(\Rightarrow\) (i):} is straightforward since 
 \[\chi_S(\boldx+\boldy) = \sum_{i\in S} (x_i + y_i) = \sum_{i\in S} x_i +
@@ -289,7 +360,7 @@ interpret it as a \emph{property test}:
 \noindent Using this definition (i') can be understood in the sense
 that the probability of \textsf{BLR} accepting the function \(f\) is
 large, more precisely \[\prob_{x,y \in \{-1,1\}^n}\left[\textsf{BLR}(f) \text{
-    \textit{accepts} }\right] \geq (1-\eps).\]
+    accepts}\right] \geq (1-\eps).\]
 (Here \(\prob_{x,y \in \{-1,1\}^n}\) denotes the product measure on
 \(\{-1,1\}^n \times \{-1,1\}^n\).)\\
 
@@ -306,9 +377,10 @@ properties and motivates the following definition:
     testable} if there exists a randomized querying algorithm
   \(\mathcal{T}\) making at most \(\mathcal{O}(1)\) queries such that: 
   \begin{enumerate}[label=(\roman*)]
-  \item If \(f \in \prty\) then \(\prob[\mathcal{T}(f) \text{ \textit{accepts}}] = 1\).
+  \item If \(f \in \prty\) then \(\prob[\mathcal{T}(f) \text{ accepts}] = 1\).
   \item If \(f\) is \(\eps\)-far from having property \(\prty\) then
-    \(\prob[\mathcal{T}(f) \text{ \textit{accepts}}] \leq 1 - \Omega(\eps)\).
+    \(\prob[\mathcal{T}(f) \text{ accepts}] \leq 1 - \Omega(\eps)\),
+    (here \(\Omega(\eps)\) means the big Omega notation).
   \end{enumerate}
 \end{definition}
 
@@ -323,9 +395,9 @@ due to Rubinfeld and Sudan:
   \(\eps > 0\) it makes \(q(\eps)\) random queries and satisfies:
   \begin{enumerate}[label=(\roman*)]
   \item If \(f \in \prty\) then \(\prob[\mathcal{T}(f) \text{
-      \textit{accepts}}] \geq \frac{2}{3}\).
+      accepts}] \geq \frac{2}{3}\).
   \item If \(f\) is \(\eps\)-far from \(\prty\) then \(\prob[\mathcal{T}(f) \text{
-      \textit{accepts}}] \leq \frac{1}{3}\).
+      accepts}] \leq \frac{1}{3}\).
   \end{enumerate}
 \end{definition}
 
@@ -366,39 +438,39 @@ We will prove the testability of linearity in three steps:
   the following holds: 
   \begin{equation}
     \label{eq:2}
-    \prob_{\boldx,\boldy \in \{-1,1\}^n}[\textsf{BLR}(f) \text{ \textit{accepts}}] = \frac{1}{2} + \frac{1}{2}\sum_{S\subseteq \nset}\hat{f}(S)^3.
+    \prob_{\boldx,\boldy \in \{-1,1\}^n}[\textsf{BLR}(f) \text{ accepts}] = \frac{1}{2} + \frac{1}{2}\sum_{S\subseteq \nset}\hat{f}(S)^3.
   \end{equation}
 \end{lemma}
 
 \begin{proof}
   The proof consists primarly in writing the probability term in a
   suitable way and using the Fourier expansion of \(f\). \\
-  We write the indicator function \(\mathbb{1}_{\{\textsf{BLR}(f) \text{ \textit{accepts}}\}}\) in the
+  We write the indicator function \(\mathbb{1}_{\{\textsf{BLR}(f) \text{ accepts}\}}\) in the
   following way for \(\boldx,\boldy \in \{-1,1\}^n\)
-  \[\mathbb{1}_{\{\textsf{BLR}(f) \text{ \textit{accepts}}\}}(\boldx,\boldy) =
+  \[\mathbb{1}_{\{\textsf{BLR}(f) \text{ accepts}\}}(\boldx,\boldy) =
   \frac{1}{2} + \frac{1}{2}f(\boldx)f(\boldy)f(\boldx\circ \boldy).\]
   Hence we can express the left-hand side of (\ref{eq:2}) by
-  \[\prob_{\boldx,\boldy \in \{-1,1\}^n}[\textsf{BLR}(f) \text{ \textit{accepts}}] =
+  \[\prob_{\boldx,\boldy \in \{-1,1\}^n}[\textsf{BLR}(f) \text{ accepts}] =
   \frac{1}{2} + \frac{1}{2} \expe_{\boldx,\boldy}[f(\boldx) f(\boldy)
   f(\boldx\circ\boldy)].\] 
   Using the Fourier expansion of \(f\) we find by linearity of the expectation: 
   \begin{align}
     \label{eq:3}
-    \prob&_{\boldx,\boldy \in \{-1,1\}^n}[\textsf{BLR}(f) \text{ \textit{accepts}}] \notag \\  
+    \prob&_{\boldx,\boldy \in \{-1,1\}^n}[\textsf{BLR}(f) \text{ accepts}] \notag \\  
     &=  \frac{1}{2} + \frac{1}{2} \sum_{S,T,U \subseteq \nset}\left(\hat{f}(S) \hat{f}(T) \hat{f}(U) \expe_{\boldx,\boldy}[\chi_S(\boldx) \chi_T(\boldy) \chi_U(\boldx\circ \boldy)]\right) \\
     &= \frac{1}{2} + \frac{1}{2} \sum_{S,T,U \subseteq \nset}\left(\hat{f}(S) \hat{f}(T) \hat{f}(U) \expe_{\boldx,\boldy}[\chi_S(\boldx) \chi_T(\boldy) \chi_U(\boldx) \chi_U(\boldy)]\right),  
   \end{align}
   where we used the linearity of parity functions. \\
-  Since with respect to the product measure \(\prob_{\boldx,\boldy}\), two functions
-  \(f(\boldx),f(\boldy)\) are independent we finally get 
+  Since, with respect to the product measure \(\prob_{\boldx,\boldy}\) two functions
+  \(f(\boldx),f(\boldy)\) are independent, we finally get 
   \begin{align}
     \label{eq:4}
-    \prob&_{\boldx,\boldy \in \{-1,1\}^n}[\textsf{BLR}(f) \text{ \textit{accepts}}] \notag \\ 
+    \prob&_{\boldx,\boldy \in \{-1,1\}^n}[\textsf{BLR}(f) \text{ accepts}] \notag \\ 
     &= \frac{1}{2} + \frac{1}{2} \sum_{S,T,U \subseteq \nset}\left(\hat{f}(S) \hat{f}(T) \hat{f}(U) \cdot \expe_{\boldx}[\chi_S(\boldx)\chi_U(\boldx)] \expe_{\boldy}[\chi_T(\boldy)\chi_U(\boldy)]\right) \\
     &= \frac{1}{2} + \frac{1}{2} \sum_{S,T,U \subseteq \nset}\left(\hat{f}(S) \hat{f}(T) \hat{f}(U) \cdot \langle \chi_S, \chi_U \rangle \cdot \langle \chi_T, \chi_U \rangle \right) \\
-    &= \frac{1}{2} + \frac{1}{2} \sum_{S \subseteq \nset} \hat{f}(S)^3, 
+    &= \frac{1}{2} + \frac{1}{2} \sum_{S \subseteq \nset} \hat{f}(S)^3. 
   \end{align}
-  since the parity functions are a orthonormal basis of all Boolean
+  Here we use that the parity functions are an orthonormal basis of all Boolean
   functions which means in particular
   \[\langle \chi_S, \chi_U \rangle \cdot \langle \chi_T, \chi_U \rangle = 
   \begin{cases}
@@ -412,7 +484,7 @@ We will prove the testability of linearity in three steps:
 \begin{theorem}[Local testability of linearity] \label{thm:1}
   The property of being linear is locally testable using the
   \textsf{BLR}-test and 
-  \[\prob[\textsf{BLR}(f) \text{ \textit{accepts}}] < 1 - \eps,\]
+  \[\prob[\textsf{BLR}(f) \text{ accepts}] < 1 - \eps,\]
   for every \(f\) which is \(\eps\)-far from being linear. 
 \end{theorem}
 
@@ -422,7 +494,7 @@ We will prove the testability of linearity in three steps:
   \ref{def:1} and the subsequent discussion.\\ 
   Let now \(f\) be \(\eps\)-far from being linear and assume for the
   sake of contradiction 
-  \[\prob_{\boldx,\boldy}\left[\textsf{BLR}(f) \text{ \textit{accepts}}\right] \geq
+  \[\prob_{\boldx,\boldy}\left[\textsf{BLR}(f) \text{ accepts}\right] \geq
   (1-\eps). \]
   Then using Lemma \ref{lem:1} we have \(1-\eps \leq \frac{1}{2} +
   \frac{1}{2} \sum_{S\subseteq \nset}\hat{f}(S)^3\) and consequently
@@ -448,7 +520,7 @@ We will prove the testability of linearity in three steps:
   \begin{itemize}
   \item Run \(\textsf{BLR}(f)\) \(2/\eps\) times,
     independently.
-  \item Accept iff every \(\textsf{BLR}(f)\) accepts. 
+  \item Overall accept iff every \(\textsf{BLR}(f)\) accepts. 
   \end{itemize}
   Note that if \(f\) is linear then \(\mathcal{T}(f)\) accepts with
   probability one, since \(\textsf{BLR}(f)\) accepts in every case.\\
@@ -456,14 +528,14 @@ We will prove the testability of linearity in three steps:
   \textsf{BLR} queries are independent from each other, we get from
   Theorem \ref{thm:1}
   \begin{align}
-    \prob\left[\mathcal{T}(f) \text{ \textit{accepts}}\right] 
+    \prob\left[\mathcal{T}(f) \text{ accepts}\right] 
     &< \left(1-\eps\right)^{2/\eps} \\
     &= \left(\left(1-\frac{1}{(1/\eps)}\right)^{1/\eps}\right)^2.
   \end{align}
   Since the last term converges for \(\eps \rightarrow 0\) to
   \(e^{-2}\) we get for \(\eps\) small enough (e.g. \(\eps \leq
   \frac{1}{2}\)) 
-  \[\prob\left[\mathcal{T}(f) \text{ \textit{accepts}}\right] < \frac{1}{3}.\]
+  \[\prob\left[\mathcal{T}(f) \text{ accepts}\right] < \frac{1}{3}.\]
 \end{proof}
 
 
